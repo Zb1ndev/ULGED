@@ -190,7 +190,7 @@ int main(void) {
             }
           }
         }
-        DrawRectangleRec((Rectangle){(80.0f + (_fontSize * 2)),5.0f,2.0f,PercentY(1.0f)}, (Color){5,5,5,255});
+        DrawRectangleRec((Rectangle){(80.0f + (_fontSize * 2)),5.0f,2.0f,PercentY(1.0f)}, (Color){17,17,17,255});
       }
 
       /* Draw Information Bar */ {
