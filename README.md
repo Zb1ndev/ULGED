@@ -1,7 +1,8 @@
 # Ultra Lightweight Graphical Editor ( ULGED ) 
 ULGED is a Graphical Text / Code Editor written in C using Raylib. It features many of the comforts of normal and more popular editors
 inside a smaller package. The entire application can be used without the need of a mouse, and it's use is actually recommended with just
-a keyboard. ( Not Working RN )
+a keyboard. 
+- ( Not Working RN )
 
 ## Controls
 - Zoom In / Out : ```CTRL + '='``` ```CTRL + '-'```
