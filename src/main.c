@@ -1,9 +1,3 @@
-/*
-  This is a epic Code / Text Editor written in C
-  using Raylib.
-  Designed and Written by Joel Zbinden ( aka. Zb1nden )
-*/
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -34,7 +28,7 @@
 #pragma endregion
 
 int viewedLineNum = 0;
-int maxLineNum = 100;
+int maxLineNum = 9999;
 int highlightedLine = 0;
 int lnBufferLength = 0;
 Timer _backspaceTimer;
@@ -168,6 +162,8 @@ int main(void) {
         _commandPaletteOpen = false;
         
       }
+
+      if (IsKeyPressed(KEY_ESCAPE)) _commandPaletteOpen = false;
 
     }
 
