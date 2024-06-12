@@ -9,7 +9,7 @@ a keyboard.
 - Open Command Palette : ```CTRL + 'P'``` 
 
 ## Commands
-The command palette features a plethura of commands that can control everything from window properties to navigation. List of available commands : **Note : all commands are non-k-sensitive, though need to have a space in between arguments**
+The command palette features a plethura of commands that can control everything from window properties to navigation. List of available commands : **Note : all commands are non-k-sensitive, though need to have a space in between arguments, also commands marked with an * are not supported by Wayland**
 - ```goto``` + ``` Line Number ``` : Goes to the requested **Line Number**
 - ```close``` : Closes the Editor
 - ```minimize``` : Minimizes the Editor

@@ -28,12 +28,12 @@
 #pragma endregion
 #pragma region Globals
 
-int viewedLineNum = 0;
-int maxLineNum = 9999;
-int highlightedLine = 0;
-int lnBufferLength = 0;
-Timer _backspaceTimer;
-bool useCustomTitleBar = false;
+  int viewedLineNum = 0;
+  int maxLineNum = 9999;
+  int highlightedLine = 0;
+  int lnBufferLength = 0;
+  Timer _backspaceTimer;
+  bool useCustomTitleBar = false;
 
 #pragma endregion 
 #pragma region Utilities
@@ -176,6 +176,7 @@ int main(void) {
 
     #pragma endregion
     #pragma region Command Palette
+
       if (IsKeyPressed(KEY_P) && IsKeyDown(KEY_LEFT_CONTROL)) {
         _paletteCursorIndex = 0;
         for(size_t i = 0; i < sizeof(_paletteBuffer); ++i)
@@ -217,6 +218,11 @@ int main(void) {
             StartTimer(&_backspaceTimer, 0.1);
           }
         }
+
+        if (IsKeyPressed(KEY_LEFT) && _paletteCursorIndex > 0)
+          _paletteCursorIndex--;
+        if (IsKeyPressed(KEY_RIGHT) && _paletteCursorIndex < strlen(_paletteBuffer))
+          _paletteCursorIndex++;
 
         if (IsKeyPressed(KEY_ENTER)) {
           _paletteCursorIndex = 0;
@@ -283,13 +289,22 @@ int main(void) {
         sprintf(_shownLineCount,"LN Buf Len : %d", lnBufferLength);
         DrawTextEx(_font, _shownLineCount, (Vector2){212.0f + _lineCountspacing, GetRenderHeight()-20}, 20.0f, 2, (Color){0,0,0,255});
 
+        char _paletteCursorIndexText[20];
+        sprintf(_paletteCursorIndexText,"| Cursor Index : %d", _paletteCursorIndex);
+        DrawTextEx(_font, _paletteCursorIndexText, (Vector2){400.0f, GetRenderHeight()-20}, 20.0f, 2, (Color){0,0,0,255});
+
       #pragma endregion
       #pragma region Draw Command Palette 
         if (_commandPaletteOpen) {
 
           DrawRectangleRounded((Rectangle){PercentX(.5f) - 201.0f, 14.0f, 402.0f, 32.0f}, 1.0f, 0, WHITE); // Outline
           DrawRectangleRounded((Rectangle){PercentX(.5f) - 200.0f, 15.0f, 400.0f, 30.0f}, 1.0f, 0, _paletteColor); // Fill
-
+          
+          char _cursorBuffer[40];
+          strncpy(_cursorBuffer, _paletteBuffer, _paletteCursorIndex+1);
+          Vector2 _size = MeasureTextEx(_font,_cursorBuffer, 16.0f, 2.0f);
+          
+          DrawRectangleRec((Rectangle){((PercentX(.5f) - 170.0f) + _size.x + 2.0f), 22.0f, 8.0f, 16.0f}, DARKGRAY);
           DrawTextEx(_font, _paletteBuffer, (Vector2){PercentX(.5f) - 170.0f, 22.0f},16.0f,2,(Color){150,150,150,255});
           DrawTextEx(_font, "+", (Vector2){PercentX(.5f) - 190.0f, 20.0f},20.0f,2,(Color){255,255,255,255});
           DrawTextEx(_font, "| [ENTER]", (Vector2){PercentX(.5f) + 120.0f, 21.0f},16.0f,2,(Color){60,60,60,255});
