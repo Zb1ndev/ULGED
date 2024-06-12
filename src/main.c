@@ -93,8 +93,8 @@ bool useCustomTitleBar = false;
       MaximizeWindow();
     if (CompareString(_command, "restore", 7))
       RestoreWindow();
-    if (CompareString(_command, "setmonitor",10))
-      SetWindowMonitor(GetNumAfterCommand(_command,10,0));
+    if (CompareString(_command, "set monitor",11))
+      SetWindowMonitor(GetNumAfterCommand(_command,11,0));
 
   }
 
