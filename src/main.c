@@ -82,18 +82,32 @@ Timer _backspaceTimer;
       );
     }
 
+    if (CompareString(_command, "close", 5))
+      CloseWindow();
+    if (CompareString(_command, "minimize", 8))
+      MinimizeWindow();
+    if (CompareString(_command, "fullscreen", 10))
+      MaximizeWindow();
+    if (CompareString(_command, "restore", 7))
+      RestoreWindow();
+    if (CompareString(_command, "setmonitor",10))
+      SetWindowMonitor(GetNumAfterCommand(_command,10,0));
+
   }
 
 #pragma endregion
 
 int main(void) {
   
-  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_UNDECORATED);
   InitWindow(1280, 720, "Text Editor");
   SetExitKey(KEY_NULL);
 
   SetTargetFPS(60);
   
+  bool _closeHover, _minimizeHover, _fullscreenHover, _moveHover;
+
+
   float _fontSize = 20.0f;
   int _lineSpaceing = 200;
   Font _font = LoadFontEx (
@@ -111,6 +125,30 @@ int main(void) {
   Color _paletteColor = (Color){20,20,20,255};
 
   while (!WindowShouldClose()) {
+
+    /* Window Functions */ {
+
+      _closeHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-14.0f,14.0f}, 7.0f); 
+      _fullscreenHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-35.0f,14.0f}, 7.0f); 
+      _minimizeHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-56.0f,14.0f}, 7.0f); 
+      _moveHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-77.0f,14.0f}, 7.0f); 
+
+      if (_closeHover && IsMouseButtonPressed(0))
+          CloseWindow();
+      if (_fullscreenHover && IsMouseButtonPressed(0))
+        if (IsWindowMaximized())
+          RestoreWindow();
+        else
+          MaximizeWindow();
+      if (_minimizeHover && IsMouseButtonPressed(0))
+          MinimizeWindow();
+      if (_moveHover && IsMouseButtonDown(0)) {
+        Vector2 _mouseDelta = GetMouseDelta();
+        Vector2 _windowPos = GetWindowPosition();
+        SetWindowPosition((_windowPos.x + _mouseDelta.x),(_windowPos.y + _mouseDelta.y));
+      }
+
+    }
 
     if (IsKeyPressed(KEY_P) && IsKeyDown(KEY_LEFT_CONTROL)) {
       _paletteCursorIndex = 0;
@@ -171,6 +209,15 @@ int main(void) {
 
       ClearBackground((Color){ 13, 13, 13, 255 });
 
+      /* Draw Window Functions */ {
+
+        DrawCircle(PercentX(1.0f)-14.0f, 14.0f, 7.0f, _closeHover ? DARKGRAY : RED);
+        DrawCircle(PercentX(1.0f)-35.0f, 14.0f, 7.0f, _fullscreenHover ? DARKGRAY : GREEN);
+        DrawCircle(PercentX(1.0f)-56.0f, 14.0f, 7.0f, _minimizeHover ? DARKGRAY : YELLOW);
+        DrawCircle(PercentX(1.0f)-77.0f, 14.0f, 7.0f, _moveHover ? BLACK : GRAY);
+
+      }
+      
       /* Draw Line Numbers */ {
         if (maxLineNum > 0) {
           int _wantedLength = (int)((PercentY(1.0f) / (_fontSize + 4)) * 7.0f);
