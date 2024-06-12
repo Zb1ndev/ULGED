@@ -9,5 +9,5 @@ a keyboard.
 - Open Command Palette : ```CTRL + 'P'``` 
 
 ## Commands
-The command palette features a plethura of commands that can control everything from window properties to navigation. List of available commands : ***Note : all commands are non-k-sensitive.*** 
-- "goto" { Line Number } : Goes to the requested Line Number
+The command palette features a plethura of commands that can control everything from window properties to navigation. List of available commands : **Note : all commands are non-k-sensitive, though need to have a space in between arguments**
+- ```goto``` { Line Number } : Goes to the requested Line Number
