@@ -26,13 +26,16 @@
   }
 
 #pragma endregion
+#pragma region Globals
 
 int viewedLineNum = 0;
 int maxLineNum = 9999;
 int highlightedLine = 0;
 int lnBufferLength = 0;
 Timer _backspaceTimer;
+bool useCustomTitleBar = false;
 
+#pragma endregion 
 #pragma region Utilities
 
   float PercentX(float _percent) {
@@ -99,126 +102,151 @@ Timer _backspaceTimer;
 
 int main(void) {
   
-  SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_UNDECORATED);
+  /* Decide Whether or not to use the Custom Title bar 
+   - ( No worky on Ubuntu cuz Wayland :( ) 
+   - ( Could use macro but im lazy ) */
+  if (useCustomTitleBar) SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_UNDECORATED);
+  else SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+
   InitWindow(1280, 720, "Text Editor");
   SetExitKey(KEY_NULL);
-
   SetTargetFPS(60);
   
-  bool _closeHover, _minimizeHover, _fullscreenHover, _moveHover;
+  #pragma region Window Function Buttons
 
+    bool _closeHover, 
+        _minimizeHover, 
+        _fullscreenHover, 
+        _moveHover;
 
-  float _fontSize = 20.0f;
-  int _lineSpaceing = 200;
-  Font _font = LoadFontEx (
-    "/home/zbinden/Coding/TextEditor/src/assets/Font.ttf", 
-    32, 0, 250
-  );
-  SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
+  #pragma endregion
+  #pragma region Custom Font 
 
-  char _textBuffer[1];
-  int _cursorIndex = 0;
+    float _fontSize = 20.0f;
+    int _lineSpaceing = 200;
+    Font _font = LoadFontEx (
+      "/home/zbinden/Coding/TextEditor/src/assets/Font.ttf", 
+      32, 0, 250
+    );
+    SetTextureFilter(_font.texture, TEXTURE_FILTER_BILINEAR);
 
-  char _paletteBuffer[40]; 
-  int _paletteCursorIndex = 0;
-  bool _commandPaletteOpen = false;
-  Color _paletteColor = (Color){20,20,20,255};
+  #pragma endregion
+  #pragma region Text Editor
+  
+    char _textBuffer[1];
+    int _cursorIndex = 0;
+
+  #pragma endregion
+  #pragma region Command Palette
+
+    char _paletteBuffer[40]; 
+    int _paletteCursorIndex = 0;
+    bool _commandPaletteOpen = false;
+    Color _paletteColor = (Color){20,20,20,255};
+
+  #pragma endregion
 
   while (!WindowShouldClose()) {
 
-    /* Window Functions */ {
+    #pragma region Window Functions
 
-      _closeHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-14.0f,14.0f}, 7.0f); 
-      _fullscreenHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-35.0f,14.0f}, 7.0f); 
-      _minimizeHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-56.0f,14.0f}, 7.0f); 
-      _moveHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-77.0f,14.0f}, 7.0f); 
+      if (useCustomTitleBar) {
 
-      if (_closeHover && IsMouseButtonPressed(0))
-          CloseWindow();
-      if (_fullscreenHover && IsMouseButtonPressed(0))
-        if (IsWindowMaximized())
-          RestoreWindow();
-        else
-          MaximizeWindow();
-      if (_minimizeHover && IsMouseButtonPressed(0))
-          MinimizeWindow();
-      if (_moveHover && IsMouseButtonDown(0)) {
-        Vector2 _mouseDelta = GetMouseDelta();
-        Vector2 _windowPos = GetWindowPosition();
-        SetWindowPosition((_windowPos.x + _mouseDelta.x),(_windowPos.y + _mouseDelta.y));
-      }
+        _closeHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-14.0f,14.0f}, 7.0f); 
+        _fullscreenHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-35.0f,14.0f}, 7.0f); 
+        _minimizeHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-56.0f,14.0f}, 7.0f); 
+        _moveHover = CheckCollisionPointCircle(GetMousePosition(), (Vector2){PercentX(1.0f)-77.0f,14.0f}, 7.0f); 
 
-    }
-
-    if (IsKeyPressed(KEY_P) && IsKeyDown(KEY_LEFT_CONTROL)) {
-      _paletteCursorIndex = 0;
-      for(size_t i = 0; i < sizeof(_paletteBuffer); ++i)
-        _paletteBuffer[i] = 0;
-      _commandPaletteOpen = !_commandPaletteOpen;
-    }
-    
-    if (!_commandPaletteOpen) {
-
-      /* Zoom Controls */ {
-        if (IsKeyPressed(KEY_EQUAL) && IsKeyDown(KEY_LEFT_CONTROL))
-          if (_fontSize < 60.0f)
-            _fontSize+=5.0f;
-        if (IsKeyPressed(KEY_MINUS) && IsKeyDown(KEY_LEFT_CONTROL))
-          if (_fontSize > 15.0f)
-            _fontSize-=5.0f;
-      }
-      /* Scroll Controls */ {
-        if (GetMouseWheelMove() < 0 || IsKeyDown(KEY_DOWN) && IsKeyDown(KEY_LEFT_CONTROL))
-          if (viewedLineNum < maxLineNum-1)
-            viewedLineNum++;
-        if (GetMouseWheelMove() > 0 || IsKeyDown(KEY_UP) && IsKeyDown(KEY_LEFT_CONTROL) )
-          if (viewedLineNum > 0)
-            viewedLineNum--;
-      }
-
-    } else {
-
-      int _key = GetCharPressed();
-      if (_key >=32 && _key <= 125 && _paletteCursorIndex < 39) {
-        _paletteBuffer[_paletteCursorIndex] = (char)_key;
-        _paletteCursorIndex++;
-      }
-
-      if (IsKeyDown(KEY_BACKSPACE) && TimerDone(_backspaceTimer)) {
-        if (_paletteCursorIndex > 0) {
-          _paletteCursorIndex--;
-          _paletteBuffer[_paletteCursorIndex] = 0;
-          StartTimer(&_backspaceTimer, 0.1);
+        if (_closeHover && IsMouseButtonPressed(0))
+            CloseWindow();
+        if (_fullscreenHover && IsMouseButtonPressed(0))
+          if (IsWindowMaximized())
+            RestoreWindow();
+          else
+            MaximizeWindow();
+        if (_minimizeHover && IsMouseButtonPressed(0))
+            MinimizeWindow();
+        if (_moveHover && IsMouseButtonDown(0)) {
+          Vector2 _mouseDelta = GetMouseDelta();
+          Vector2 _windowPos = GetWindowPosition();
+          SetWindowPosition((_windowPos.x + _mouseDelta.x),(_windowPos.y + _mouseDelta.y));
         }
+      
       }
 
-      if (IsKeyPressed(KEY_ENTER)) {
+    #pragma endregion
+    #pragma region Command Palette
+      if (IsKeyPressed(KEY_P) && IsKeyDown(KEY_LEFT_CONTROL)) {
         _paletteCursorIndex = 0;
-        RunCommand(_paletteBuffer);
         for(size_t i = 0; i < sizeof(_paletteBuffer); ++i)
           _paletteBuffer[i] = 0;
-        _commandPaletteOpen = false;
-        
+        _commandPaletteOpen = !_commandPaletteOpen;
+      }
+      
+      if (!_commandPaletteOpen) {
+
+        /* Zoom Controls */ {
+          if (IsKeyPressed(KEY_EQUAL) && IsKeyDown(KEY_LEFT_CONTROL))
+            if (_fontSize < 60.0f)
+              _fontSize+=5.0f;
+          if (IsKeyPressed(KEY_MINUS) && IsKeyDown(KEY_LEFT_CONTROL))
+            if (_fontSize > 15.0f)
+              _fontSize-=5.0f;
+        }
+        /* Scroll Controls */ {
+          if (GetMouseWheelMove() < 0 || IsKeyDown(KEY_DOWN) && IsKeyDown(KEY_LEFT_CONTROL))
+            if (viewedLineNum < maxLineNum-1)
+              viewedLineNum++;
+          if (GetMouseWheelMove() > 0 || IsKeyDown(KEY_UP) && IsKeyDown(KEY_LEFT_CONTROL) )
+            if (viewedLineNum > 0)
+              viewedLineNum--;
+        }
+
+      } else {
+
+        int _key = GetCharPressed();
+        if (_key >=32 && _key <= 125 && _paletteCursorIndex < 39) {
+          _paletteBuffer[_paletteCursorIndex] = (char)_key;
+          _paletteCursorIndex++;
+        }
+
+        if (IsKeyDown(KEY_BACKSPACE) && TimerDone(_backspaceTimer)) {
+          if (_paletteCursorIndex > 0) {
+            _paletteCursorIndex--;
+            _paletteBuffer[_paletteCursorIndex] = 0;
+            StartTimer(&_backspaceTimer, 0.1);
+          }
+        }
+
+        if (IsKeyPressed(KEY_ENTER)) {
+          _paletteCursorIndex = 0;
+          RunCommand(_paletteBuffer);
+          for(size_t i = 0; i < sizeof(_paletteBuffer); ++i)
+            _paletteBuffer[i] = 0;
+          _commandPaletteOpen = false;
+          
+        }
+
+        if (IsKeyPressed(KEY_ESCAPE)) _commandPaletteOpen = false;
+
       }
 
-      if (IsKeyPressed(KEY_ESCAPE)) _commandPaletteOpen = false;
+    #pragma endregion
 
-    }
-
+    // Renderer Block ( its a block :0  )
     BeginDrawing(); {
 
       ClearBackground((Color){ 13, 13, 13, 255 });
 
-      /* Draw Window Functions */ {
-
-        DrawCircle(PercentX(1.0f)-14.0f, 14.0f, 7.0f, _closeHover ? DARKGRAY : RED);
-        DrawCircle(PercentX(1.0f)-35.0f, 14.0f, 7.0f, _fullscreenHover ? DARKGRAY : GREEN);
-        DrawCircle(PercentX(1.0f)-56.0f, 14.0f, 7.0f, _minimizeHover ? DARKGRAY : YELLOW);
-        DrawCircle(PercentX(1.0f)-77.0f, 14.0f, 7.0f, _moveHover ? BLACK : GRAY);
-
-      }
-      
-      /* Draw Line Numbers */ {
+      #pragma region Draw Window Functions 
+        if (useCustomTitleBar) {
+          DrawCircle(PercentX(1.0f)-14.0f, 14.0f, 7.0f, _closeHover ? DARKGRAY : RED);
+          DrawCircle(PercentX(1.0f)-35.0f, 14.0f, 7.0f, _fullscreenHover ? DARKGRAY : GREEN);
+          DrawCircle(PercentX(1.0f)-56.0f, 14.0f, 7.0f, _minimizeHover ? DARKGRAY : YELLOW);
+          DrawCircle(PercentX(1.0f)-77.0f, 14.0f, 7.0f, _moveHover ? BLACK : GRAY);
+        }
+      #pragma endregion
+      #pragma region Draw Line Numbers
         if (maxLineNum > 0) {
           int _wantedLength = (int)((PercentY(1.0f) / (_fontSize + 4)) * 7.0f);
           const int _length = ((_wantedLength % 2) == 1) ? _wantedLength : _wantedLength + 1;  
@@ -234,9 +262,8 @@ int main(void) {
           }
         }
         DrawRectangleRec((Rectangle){(80.0f + (_fontSize * 2)),5.0f,2.0f,PercentY(1.0f)}, (Color){17,17,17,255});
-      }
-
-      /* Draw Information Bar */ {
+      #pragma endregion
+      #pragma region Draw Information Bar 
 
         DrawRectangle(0, GetRenderHeight()-20, GetRenderWidth(), 20, WHITE);
         DrawTextEx(_font, "-- INSERT -- | ", (Vector2){5.0f, GetRenderHeight()-20}, 20.0f, 2, (Color){0,0,0,255});
@@ -256,9 +283,8 @@ int main(void) {
         sprintf(_shownLineCount,"LN Buf Len : %d", lnBufferLength);
         DrawTextEx(_font, _shownLineCount, (Vector2){212.0f + _lineCountspacing, GetRenderHeight()-20}, 20.0f, 2, (Color){0,0,0,255});
 
-      }
-
-      /* Draw Command Palette */ {
+      #pragma endregion
+      #pragma region Draw Command Palette 
         if (_commandPaletteOpen) {
 
           DrawRectangleRounded((Rectangle){PercentX(.5f) - 201.0f, 14.0f, 402.0f, 32.0f}, 1.0f, 0, WHITE); // Outline
@@ -269,7 +295,7 @@ int main(void) {
           DrawTextEx(_font, "| [ENTER]", (Vector2){PercentX(.5f) + 120.0f, 21.0f},16.0f,2,(Color){60,60,60,255});
 
         }
-      }
+      #pragma endregion
 
     } EndDrawing();
     
@@ -277,6 +303,7 @@ int main(void) {
 
   UnloadFont(_font);
   CloseWindow();
+  
   return 0;
 
 }
