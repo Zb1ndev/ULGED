@@ -10,4 +10,9 @@ a keyboard.
 
 ## Commands
 The command palette features a plethura of commands that can control everything from window properties to navigation. List of available commands : **Note : all commands are non-k-sensitive, though need to have a space in between arguments**
-- ```goto``` { Line Number } : Goes to the requested Line Number
+- ```goto``` { Line Number } : Goes to the requested **Line Number**
+- ```close``` : Closes the Editor
+- ```minimize``` : Minimizes the Editor
+- ```fullscreen``` : Maximizes the Editor
+- ```restore``` : Resores the Editor to its original size ( use after ```fullscreen``` )
+- ```setmonitor``` { Monitor ID } : Sets the monitor that renders the window to the **Monitor ID** 
