@@ -15,4 +15,4 @@ The command palette features a plethura of commands that can control everything 
 - ```minimize``` : Minimizes the Editor
 - ```fullscreen``` : Maximizes the Editor
 - ```restore``` : Resores the Editor to its original size ( use after ```fullscreen``` )
-- *```set monitor``` + ``` Monitor ID ``` : Sets the monitor that renders the window to the **Monitor ID** 
+- * ```set monitor``` + ``` Monitor ID ``` : Sets the monitor that renders the window to the **Monitor ID** 
